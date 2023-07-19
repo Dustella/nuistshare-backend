@@ -1,0 +1,49 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Archive {
+    id              Int             @id @default(autoincrement())
+    name            String
+    l1Class         String
+    l2Class         String
+    type            String
+    tags            String[]
+    ArchiveExtern   ArchiveExtern[]
+    UserFavourite   UserFavourite?  @relation(fields: [userFavouriteId], references: [id])
+    userFavouriteId Int?
+}
+
+model Users {
+    id            Int             @id @default(autoincrement())
+    name          String
+    password      String
+    phone         String
+    email         String
+    UserFavourite UserFavourite[]
+}
+
+model Metadata {
+    id            Int             @id @default(autoincrement())
+    type          String
+    href          String
+    ArchiveExtern ArchiveExtern[]
+}
+
+model ArchiveExtern {
+    id            Int        @id @default(autoincrement())
+    archive       Archive    @relation(fields: [archiveId], references: [id])
+    archiveId     Int
+    metadata      Metadata[]
+    downloadCount Int
+    viewCount     Int
+    favCount      Int
+}
+
+model UserFavourite {
+    id      Int       @id @default(autoincrement())
+    user    Users     @relation(fields: [userId], references: [id])
+    userId  Int
+    archive Archive[]
+}
