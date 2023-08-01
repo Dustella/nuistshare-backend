@@ -3,16 +3,23 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+generator client {
+    provider = "prisma-client-js"
+}
+
 model Archive {
-    id              Int             @id @default(autoincrement())
+    id              Int            @id @default(autoincrement())
     name            String
     l1Class         String
     l2Class         String
-    type            String
+    type            String?
     tags            String[]
-    ArchiveExtern   ArchiveExtern[]
-    UserFavourite   UserFavourite?  @relation(fields: [userFavouriteId], references: [id])
+    UserFavourite   UserFavourite? @relation(fields: [userFavouriteId], references: [id])
     userFavouriteId Int?
+    metadata        Metadata[]
+    downloadCount   Int
+    viewCount       Int
+    favCount        Int
 }
 
 model Users {
@@ -25,20 +32,11 @@ model Users {
 }
 
 model Metadata {
-    id            Int             @id @default(autoincrement())
-    type          String
-    href          String
-    ArchiveExtern ArchiveExtern[]
-}
-
-model ArchiveExtern {
-    id            Int        @id @default(autoincrement())
-    archive       Archive    @relation(fields: [archiveId], references: [id])
-    archiveId     Int
-    metadata      Metadata[]
-    downloadCount Int
-    viewCount     Int
-    favCount      Int
+    id        Int      @id @default(autoincrement())
+    type      String
+    href      String
+    Archive   Archive? @relation(fields: [archiveId], references: [id])
+    archiveId Int?
 }
 
 model UserFavourite {
