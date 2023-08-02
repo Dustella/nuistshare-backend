@@ -20,6 +20,7 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 
 COPY --from=builder --chown=node:node /usr/src/app/package*.json ./
+COPY --from=builder --chown=node:node /usr/src/app/node_modules/ ./node_modules/
 COPY --from=builder --chown=node:node /usr/src/app/dist/ ./dist/
 
 CMD ["node", "dist/main.js"]
