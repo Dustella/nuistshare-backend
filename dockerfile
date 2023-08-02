@@ -5,7 +5,7 @@ ENV NODE_ENV build
 WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml /usr/src/app/
-RUN pnpm i
+RUN corepack enable && pnpm i
 
 COPY --chown=node:node . .
 RUN pnpm run build \
