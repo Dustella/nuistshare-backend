@@ -1,18 +1,15 @@
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
-import { DefaultArgs } from '@prisma/client/runtime/library';
 
 @Controller('/api/archives')
 export class ArchiveController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('/entries/:id')
-  async getSingleEntry(@Param('id') id: number) {
+  async getSingleEntry(@Param('id') id: string) {
     return await this.prisma.archive.findUnique({
       where: {
-        // @ts-expect-error
         id: parseInt(id),
       },
     });
@@ -75,6 +72,9 @@ export class ArchiveController {
 
     const res = await this.prisma.archive.findMany(prismaQuery);
     const totalItems = res.length;
+    if (!limit && !offset) {
+      return res;
+    }
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     const totalPages = Math.ceil(totalItems / limitNum);
@@ -87,7 +87,9 @@ export class ArchiveController {
   }
 
   @Post()
-  async addSingleEntry() {}
+  async addSingleEntry() {
+    return 'Not Implemented';
+  }
 
   @Post('/viewed/:id')
   async addCount(@Param('id') id: string) {
