@@ -16,30 +16,46 @@ model Archive {
     tags            String[]
     UserFavourite   UserFavourite? @relation(fields: [userFavouriteId], references: [id])
     userFavouriteId Int?
+    UserHistory     UserHistory?   @relation(fields: [userHistoryId], references: [id])
+    userHistoryId   Int?
     metadata        Metadata[]
     downloadCount   Int
     viewCount       Int
     favCount        Int
+    public          Boolean        @default(false)
+    uploader        String         @default("nuistshare")
+    uploadTime      DateTime       @default(now())
 }
 
 model Users {
     id            Int             @id @default(autoincrement())
     name          String
     password      String
-    phone         String
-    email         String
+    phone         String?
+    email         String?
     UserFavourite UserFavourite[]
+    UserHistory   UserHistory[]
 }
 
 model Metadata {
     id        Int      @id @default(autoincrement())
-    type      String
-    href      String
+    driver    String
+    target    String
+    label     String
+    is_dir    Boolean  @default(false)
     Archive   Archive? @relation(fields: [archiveId], references: [id])
     archiveId Int?
+    size      Int?
 }
 
 model UserFavourite {
+    id      Int       @id @default(autoincrement())
+    user    Users     @relation(fields: [userId], references: [id])
+    userId  Int
+    archive Archive[]
+}
+
+model UserHistory {
     id      Int       @id @default(autoincrement())
     user    Users     @relation(fields: [userId], references: [id])
     userId  Int

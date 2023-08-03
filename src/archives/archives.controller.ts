@@ -12,6 +12,14 @@ export class ArchiveController {
       where: {
         id: parseInt(id),
       },
+      include: {
+        metadata: {
+          select: {
+            id: true,
+            label: true,
+          },
+        },
+      },
     });
   }
 

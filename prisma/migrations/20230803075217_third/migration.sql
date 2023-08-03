@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Archive" ADD COLUMN     "uploadTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "Metadata" ADD COLUMN     "size" INTEGER;

@@ -1,5 +1,5 @@
 // read targetLs.json and load it
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 
 const source = JSON.parse(fs.readFileSync('datawork/targetLs.json', 'utf8'));
@@ -7,7 +7,7 @@ const source = JSON.parse(fs.readFileSync('datawork/targetLs.json', 'utf8'));
 const data = [];
 
 for (const item of source) {
-  const { l1_title, l2_title, title, href } = item;
+  const { l1_title, l2_title, title, href, uploader } = item;
 
   data.push({
     name: title,
@@ -21,12 +21,15 @@ for (const item of source) {
       createMany: {
         data: [
           {
-            href,
-            type: 'cloudreve',
+            target: href,
+            driver: 'cloudreve',
+            label: 'Infinity的云盘',
           },
         ],
       },
     },
+    public: true,
+    uploader: uploader ?? 'Infinity',
   });
 }
 

@@ -8,19 +8,20 @@ export class DownloadController {
 
   @Get('/archive/:id')
   @Redirect()
-  async getDownload(@Param('id') id: string, @Res() resp) {
-    const item = await this.prisma.archive.findUnique({
+  async getDownload(
+    @Param('metadata_id') id: string,
+    @Param('archive_id') item_id: string,
+    @Res() resp,
+  ) {
+    const item = await this.prisma.metadata.findUnique({
       where: {
         id: parseInt(id),
-      },
-      include: {
-        metadata: true,
       },
     });
     // update download count
     await this.prisma.archive.update({
       where: {
-        id: parseInt(id),
+        id: parseInt(item_id),
       },
       data: {
         downloadCount: {
@@ -29,12 +30,12 @@ export class DownloadController {
       },
     });
 
-    const { metadata } = item;
-    const { href, type } = metadata[0];
-    switch (type) {
+    const metadata = item;
+    const { target, driver } = metadata;
+    switch (driver) {
       case 'cloudreve': {
-        const hostname = new URL(href).hostname;
-        const hash = href.split('/').pop();
+        const hostname = new URL(target).hostname;
+        const hash = target.split('/').pop();
 
         const apiUrl = `https://${hostname}/api/v3/share/download/${hash}`;
         console.log(apiUrl);
