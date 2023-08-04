@@ -80,7 +80,17 @@ export class ArchiveController {
       };
     }
 
-    const res = await this.prisma.archive.findMany(prismaQuery);
+    const res = await this.prisma.archive.findMany({
+      ...prismaQuery,
+      include: {
+        metadata: {
+          select: {
+            id: true,
+            label: true,
+          },
+        },
+      },
+    });
     const totalItems = res.length;
     if (!limit && !offset) {
       return res;
