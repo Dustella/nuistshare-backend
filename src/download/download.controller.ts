@@ -1,10 +1,14 @@
 import { Redirect } from '@nestjsplus/redirect';
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
+import { DownloadService } from './donwload.service';
 
 @Controller('/api/download')
 export class DownloadController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private downloader: DownloadService,
+  ) {}
 
   @Get()
   @Redirect()
@@ -27,39 +31,7 @@ export class DownloadController {
     });
 
     const metadata = item;
-    const { target, driver } = metadata;
-    switch (driver) {
-      case 'cloudreve': {
-        const hostname = new URL(target).hostname;
-        const hash = target.split('/').pop();
-
-        const apiUrl = `https://${hostname}/api/v3/share/download/${hash}`;
-        console.log(apiUrl);
-        const res = await fetch(apiUrl, {
-          method: 'PUT',
-        });
-        const downUrl = (await res.json()).data;
-
-        resp.status(302).redirect(downUrl);
-      }
-      case 'alist': {
-        const hostname = new URL(target).hostname;
-        const path = new URL(target).pathname;
-        console.log(hostname, path);
-        const alist_resp = await fetch(
-          'https://index.dustella.net/api/fs/get',
-          {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: `{"path":"${decodeURIComponent(path)}","password":""}`,
-          },
-        ).then((a) => a.json());
-        const downUrl = alist_resp.data.raw_url;
-        resp.status(302).redirect(downUrl);
-      }
-    }
+    const downloadUrl = await this.downloader.getDriverUrl(metadata);
+    resp.status(302).redirect(downloadUrl);
   }
 }

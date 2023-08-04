@@ -28,82 +28,47 @@ export class ArchiveController {
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
     @Query('keyword') keyword?: string,
-    @Query('l1_class') l1_class?: string,
     @Query('l2_class') l2_class?: string,
     @Query('type') type?: string,
   ) {
-    const prismaQuery = {} as any;
+    const prismaQuery = { where: {} } as any;
 
     if (keyword) {
-      prismaQuery.where = {
-        OR: [
-          {
-            name: {
-              contains: keyword,
-            },
-          },
-          {
-            l1Class: {
-              contains: keyword,
-            },
-          },
-          {
-            l2Class: {
-              contains: keyword,
-            },
-          },
-        ],
-      };
-    }
-    if (l1_class) {
-      const l1_list = l1_class?.split(',');
-      prismaQuery.where = {
-        l1Class: {
-          in: l1_list,
-        },
-      };
+      const containKeyword = { contains: keyword };
+      prismaQuery.where.OR = [
+        { name: containKeyword },
+        { l1Class: containKeyword },
+        { l2Class: containKeyword },
+      ];
     }
     if (l2_class) {
       const l2_list = l2_class?.split(',');
-      prismaQuery.where = {
-        l2Class: {
-          in: l2_list,
-        },
-      };
+      prismaQuery.where.l2Class = { in: l2_list };
     }
-
     if (type) {
-      prismaQuery.where = {
-        type: {
-          contains: type,
-        },
-      };
+      prismaQuery.where.type = { contains: type };
     }
 
     const res = await this.prisma.archive.findMany({
       ...prismaQuery,
       include: {
         metadata: {
-          select: {
-            id: true,
-            label: true,
-          },
+          select: { id: true, label: true },
         },
       },
     });
+
     const totalItems = res.length;
-    if (!limit && !offset) {
-      return res;
-    }
     const limitNum = parseInt(limit);
     const offsetNum = parseInt(offset);
     const totalPages = Math.ceil(totalItems / limitNum);
+
+    if (!limit && !offset) {
+      return { data: res, totalItems, totalPages };
+    }
+
     const data = res.slice(offsetNum, offsetNum + limitNum);
-    return {
-      data,
-      totalItems,
-      totalPages,
-    };
+    return { data, totalItems, totalPages };
   }
 
   @Post()

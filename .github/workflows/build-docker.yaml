@@ -4,6 +4,7 @@ on:
   push:
     branch: |
       master
+      dev
   workflow_dispatch:
 
 jobs:
@@ -22,6 +23,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=edge,branch=master
+            type=dev,branch=dev
             type=ref,event=branch
             type=sha
 

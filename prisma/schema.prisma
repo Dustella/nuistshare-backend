@@ -25,6 +25,7 @@ model Archive {
     public          Boolean        @default(false)
     uploader        String         @default("nuistshare")
     uploadTime      DateTime       @default(now())
+    Comments        Comments[]
 }
 
 model Users {
@@ -35,6 +36,7 @@ model Users {
     email         String?
     UserFavourite UserFavourite[]
     UserHistory   UserHistory[]
+    Comments      Comments[]
 }
 
 model Metadata {
@@ -60,4 +62,14 @@ model UserHistory {
     user    Users     @relation(fields: [userId], references: [id])
     userId  Int
     archive Archive[]
+}
+
+model Comments {
+    id        Int      @id @default(autoincrement())
+    user      Users    @relation(fields: [userId], references: [id])
+    userId    Int
+    archive   Archive  @relation(fields: [archiveId], references: [id])
+    archiveId Int
+    content   String
+    time      DateTime @default(now())
 }
