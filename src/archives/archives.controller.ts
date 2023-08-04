@@ -56,16 +56,18 @@ export class ArchiveController {
       };
     }
     if (l1_class) {
+      const l1_list = l1_class?.split(',');
       prismaQuery.where = {
         l1Class: {
-          contains: l1_class,
+          in: l1_list,
         },
       };
     }
     if (l2_class) {
+      const l2_list = l2_class?.split(',');
       prismaQuery.where = {
         l2Class: {
-          contains: l2_class,
+          in: l2_list,
         },
       };
     }
@@ -110,6 +112,18 @@ export class ArchiveController {
           increment: 1,
         },
       },
+    });
+    return res;
+  }
+
+  @Get('/groups')
+  async getGroups() {
+    const res = await this.prisma.archive.findMany({
+      select: {
+        l1Class: true,
+        l2Class: true,
+      },
+      distinct: ['l1Class', 'l2Class'],
     });
     return res;
   }
