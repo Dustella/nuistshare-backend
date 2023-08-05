@@ -1,11 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
+import { MailService } from 'src/mail/mail.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService, private auth: AuthService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auth: AuthService,
+    private mailer: MailService,
+  ) {}
 
   async login(email: string, password: string) {
     const userInDb = await this.prisma.users.findUnique({
@@ -57,5 +62,17 @@ export class UsersService {
     });
 
     return this.auth.signJwt(user);
+  }
+
+  async getUserRecord(id: number) {
+    return await this.prisma.users.findUnique({
+      where: { id },
+    });
+  }
+
+  async sendVerificationCode(email: string) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const info = await this.mailer.sendCode(email, code);
+    console.log(info);
   }
 }

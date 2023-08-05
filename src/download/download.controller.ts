@@ -1,7 +1,7 @@
 import { Redirect } from '@nestjsplus/redirect';
 import { Controller, Get, Query, Res } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
 import { DownloadService } from './donwload.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('/api/download')
 export class DownloadController {
