@@ -40,4 +40,7 @@ export class UsersController {
   async verify(@Query('email') mail: string) {
     this.users.sendVerificationCode(mail);
   }
+
+  // @UseGuards(AuthGuard)
+  // @Put('/api/users/me')
 }

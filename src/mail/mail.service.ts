@@ -35,7 +35,6 @@ export class MailService {
       port: parseInt(MAIL_PORT),
       secure: 'ssl' === MAIL_ENCRYPTION,
       auth: {
-        // TODO: replace `user` and `pass` values from <https://forwardemail.net>
         user: MAIL_USERNAME,
         pass: MAIL_PASSWORD,
       },
@@ -47,7 +46,7 @@ export class MailService {
     const info = await this.transporter.sendMail({
       from: this.MAIL_FROM_ADDRESS, // sender address
       to: email, // list of receivers
-      subject: 'Hello ✔', // Subject line
+      subject: 'Nuistshare Verification', // Subject line
       text: `Code is ${code}`, // plain text body
       html: `<b>Code is ${code}</b>`, // html body
     });
