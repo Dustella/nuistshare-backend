@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 // MAIL_MAILER=smtp
 // MAIL_HOST=smtp.qcloudmail.com
@@ -16,7 +17,7 @@ export class MailService {
   private MAIL_FROM_ADDRESS: string;
   private MAIL_FROM_NAME: string;
 
-  constructor() {
+  constructor(private prisma: PrismaService) {
     const {
       MAIL_HOST,
       MAIL_PORT,
@@ -51,5 +52,58 @@ export class MailService {
       html: `<b>Code is ${code}</b>`, // html body
     });
     return info;
+  }
+
+  async sendVerification(email: string) {
+    // random generate code, make it always length 8
+    const code = Math.random().toString(36).substr(2, 8);
+
+    // send code to email
+    await this.sendCode(email, code);
+
+    const user = await this.prisma.users.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (user.email !== email) {
+      throw new HttpException('Nice Try', HttpStatus.FORBIDDEN);
+    }
+
+    await this.prisma.emailVerify.create({
+      data: {
+        userId: user.id,
+        code,
+      },
+    });
+  }
+
+  async doVerify(email: string, code: string): Promise<boolean> {
+    const record = await this.prisma.emailVerify.findMany({
+      where: {
+        code: code,
+      },
+    });
+
+    if (record.length === 0) {
+      return false;
+    }
+    const user = await this.prisma.users.findUnique({
+      where: { email },
+    });
+
+    if (record.map((item) => item.userId).find((id) => id === user.id)) {
+      await this.prisma.users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          verified: true,
+        },
+      });
+
+      return true;
+    }
   }
 }

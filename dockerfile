@@ -4,8 +4,8 @@ ENV NODE_ENV build
 
 WORKDIR /usr/src/app
 
-COPY package.json pnpm-lock.yaml /usr/src/app/
-RUN corepack enable && pnpm i
+COPY package.json pnpm-lock.yaml prisma /usr/src/app/
+RUN corepack enable && pnpm i && pnpm prisma generate
 
 COPY --chown=node:node . .
 RUN pnpm run build \

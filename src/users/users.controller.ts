@@ -35,12 +35,6 @@ export class UsersController {
     return await this.users.getUserRecord(sub);
   }
 
-  @UseGuards(AuthGuard)
-  @Get('/api/users/me/verify')
-  async verify(@Query('email') mail: string) {
-    this.users.sendVerificationCode(mail);
-  }
-
   // @UseGuards(AuthGuard)
   // @Put('/api/users/me')
 }
