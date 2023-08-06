@@ -1,13 +1,13 @@
-import { Module } from "@nestjs/common";
-import { ArchiveModule } from "./archives/archives.module";
-import { DownloadModule } from "./download/download.module";
-import { UsersModule } from "./users/users.module";
-import { AuthModule } from "./auth/auth.module";
-import { AuthService } from "./auth/auth.service";
-import { PrismaService } from "./prisma/prisma.service";
-import { PrismaModule } from "./prisma/prisma.module";
-import { MailModule } from "./mail/mail.module";
-import { UploadModule } from "./upload/upload.module";
+import { Module } from '@nestjs/common';
+import { ArchiveModule } from './archives/archives.module';
+import { DownloadModule } from './download/download.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
+import { PrismaService } from './prisma/prisma.service';
+import { PrismaModule } from './prisma/prisma.module';
+import { MailModule } from './mail/mail.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
