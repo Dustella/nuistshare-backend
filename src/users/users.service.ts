@@ -65,6 +65,17 @@ export class UsersService {
     return this.auth.signJwt(user);
   }
 
+  async getUserAvatar(id: number) {
+    const info = await this.prisma.users.findUnique({
+      where: { id },
+      select: {
+        avatar: true,
+      },
+    });
+    const url = info.avatar ?? 'https://nuistshare-cdn.dustella.net/R.png';
+    return url;
+  }
+
   async getUserRecord(id: number) {
     console.log(id);
     return await this.prisma.users.findUniqueOrThrow({

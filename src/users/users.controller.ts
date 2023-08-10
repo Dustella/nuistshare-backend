@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Put,
   Query,
+  Redirect,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -44,6 +46,13 @@ export class UsersController {
     // prune password from info
     delete info.password;
     return info;
+  }
+
+  @Get('/api/users/:id/avatar')
+  @Redirect()
+  async getAvatar(@Param('id') id: string) {
+    const url = this.users.getUserAvatar(parseInt(id));
+    return { url, code: 302 };
   }
 
   @UseGuards(AuthGuard)
