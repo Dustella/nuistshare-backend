@@ -51,7 +51,7 @@ export class UsersController {
   @Get('/api/users/:id/avatar')
   @Redirect()
   async getAvatar(@Param('id') id: string) {
-    const url = this.users.getUserAvatar(parseInt(id));
+    const url = await this.users.getUserAvatar(parseInt(id));
     return { url, code: 302 };
   }
 

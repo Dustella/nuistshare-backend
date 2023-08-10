@@ -7,7 +7,10 @@ import {
   UseGuards,
   Body,
   Req,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
+import { Archive } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -38,7 +41,19 @@ export class ArchiveController {
             label: true,
           },
         },
-        Comments: true,
+        Comments: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                nickname: true,
+                id: true,
+                avatar: true,
+                verified: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -146,5 +161,24 @@ export class ArchiveController {
       distinct: ['l1Class', 'l2Class'],
     });
     return res;
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/entry')
+  async addRecord(@Req() req: any, @Body() body: Archive) {
+    const { sub } = req.user;
+    const user = await this.prisma.users.findUnique({
+      where: { id: sub },
+    });
+    if (user.verified) {
+      const res = await this.prisma.archive.create({
+        data: {
+          ...body,
+        },
+      });
+      return res;
+    } else {
+      throw new HttpException('Not Verified', HttpStatus.UNAUTHORIZED);
+    }
   }
 }
