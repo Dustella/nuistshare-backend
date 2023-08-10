@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Users } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
 import { MailService } from 'src/mail/mail.service';
@@ -65,7 +66,8 @@ export class UsersService {
   }
 
   async getUserRecord(id: number) {
-    return await this.prisma.users.findUnique({
+    console.log(id);
+    return await this.prisma.users.findUniqueOrThrow({
       where: { id },
       include: {
         UserFavourite: true,
@@ -80,31 +82,73 @@ export class UsersService {
         where: { id: archiveId },
       });
 
-      return await this.prisma.users.update({
-        where: { id: userId },
-        data: {
-          UserFavourite: {
-            create: archive,
+      console.log(userId, archiveId, archive);
+      return await Promise.all([
+        this.prisma.users.update({
+          where: { id: userId },
+          data: {
+            UserFavourite: {
+              connect: [{ id: archiveId }],
+            },
           },
-        },
-      });
+        }),
+        this.prisma.archive.update({
+          where: { id: archiveId },
+          data: {
+            // increase favCount
+            favCount: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async removeUserFavorite(userId: number, archiveId: number) {
+  async removeUserFavourite(userId: number, archiveId: number) {
     try {
-      return await this.prisma.users.update({
-        where: { id: userId },
-        data: {
-          UserFavourite: {
-            delete: { id: archiveId },
+      return await Promise.all([
+        this.prisma.users.update({
+          where: { id: userId },
+          data: {
+            UserFavourite: {
+              disconnect: [{ id: archiveId }],
+            },
           },
-        },
-      });
+        }),
+        this.prisma.archive.update({
+          where: { id: archiveId },
+          data: {
+            // decrease favCount
+            favCount: {
+              decrement: 1,
+            },
+          },
+        }),
+      ]);
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async changePassword(email: string, newPassword: string) {
+    const hashed_password = await bcrypt.hash(newPassword, 10);
+    return await this.prisma.users.update({
+      where: { email },
+      data: {
+        password: hashed_password,
+      },
+    });
+  }
+
+  async changeInfo(userId: number, newInfo: Users) {
+    return await this.prisma.users.update({
+      where: { id: userId },
+      data: {
+        ...newInfo,
+      },
+    });
   }
 }

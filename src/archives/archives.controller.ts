@@ -1,4 +1,14 @@
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+  Body,
+  Req,
+} from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('/api/archives')
@@ -7,6 +17,16 @@ export class ArchiveController {
 
   @Get('/entries/:id')
   async getSingleEntry(@Param('id') id: string) {
+    await this.prisma.archive.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+    });
     return await this.prisma.archive.findUnique({
       where: {
         id: parseInt(id),
@@ -18,8 +38,34 @@ export class ArchiveController {
             label: true,
           },
         },
+        Comments: true,
       },
     });
+  }
+  @UseGuards(AuthGuard)
+  @Post('/comment/:id')
+  async addComment(
+    @Param('id') id: string,
+    @Body() body: { content: string },
+    @Req() req: any,
+  ) {
+    const { sub } = req.user;
+    const res = await this.prisma.comments.create({
+      data: {
+        content: body.content,
+        user: {
+          connect: {
+            id: sub,
+          },
+        },
+        archive: {
+          connect: {
+            id: parseInt(id),
+          },
+        },
+      },
+    });
+    return res;
   }
 
   @Get('/entries')

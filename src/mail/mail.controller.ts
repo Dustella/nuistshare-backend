@@ -7,7 +7,6 @@ import { MailService } from './mail.service';
 export class MailController {
   constructor(private users: UsersService, private mailer: MailService) {}
 
-  @UseGuards(AuthGuard)
   @Get('/api/email/send')
   async verify(@Query('email') mail: string) {
     await this.mailer.sendVerification(mail);
