@@ -67,12 +67,44 @@ export class UsersService {
   async getUserRecord(id: number) {
     return await this.prisma.users.findUnique({
       where: { id },
+      include: {
+        UserFavourite: true,
+        UserHistory: true,
+      },
     });
   }
 
-  async sendVerificationCode(email: string) {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const info = await this.mailer.sendCode(email, code);
-    console.log(info);
+  async addUserFavourite(userId: number, archiveId: number) {
+    try {
+      const archive = await this.prisma.archive.findUnique({
+        where: { id: archiveId },
+      });
+
+      return await this.prisma.users.update({
+        where: { id: userId },
+        data: {
+          UserFavourite: {
+            create: archive,
+          },
+        },
+      });
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async removeUserFavorite(userId: number, archiveId: number) {
+    try {
+      return await this.prisma.users.update({
+        where: { id: userId },
+        data: {
+          UserFavourite: {
+            delete: { id: archiveId },
+          },
+        },
+      });
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
   }
 }

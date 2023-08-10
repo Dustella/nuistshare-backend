@@ -8,38 +8,39 @@ generator client {
 }
 
 model Archive {
-    id              Int            @id @default(autoincrement())
-    name            String
-    l1Class         String
-    l2Class         String
-    type            String?
-    tags            String[]
-    UserFavourite   UserFavourite? @relation(fields: [userFavouriteId], references: [id])
-    userFavouriteId Int?
-    UserHistory     UserHistory?   @relation(fields: [userHistoryId], references: [id])
-    userHistoryId   Int?
-    metadata        Metadata[]
-    downloadCount   Int
-    viewCount       Int
-    favCount        Int
-    public          Boolean        @default(false)
-    uploader        String         @default("nuistshare")
-    uploadTime      DateTime       @default(now())
-    Comments        Comments[]
+    id            Int        @id @default(autoincrement())
+    name          String
+    l1Class       String
+    l2Class       String
+    type          String?
+    tags          String[]
+    metadata      Metadata[]
+    downloadCount Int
+    viewCount     Int
+    favCount      Int
+    public        Boolean    @default(false)
+    uploader      String     @default("nuistshare")
+    uploadTime    DateTime   @default(now())
+    Comments      Comments[]
+    UsersFav      Users?     @relation("UsersFav", fields: [usersFavId], references: [id])
+    usersFavId    Int?
+    UsersHis      Users?     @relation("UsersHis", fields: [usersHisId], references: [id])
+    usersHisId    Int?
 }
 
 model Users {
-    id            Int             @id @default(autoincrement())
-    name          String          @unique
+    id            Int           @id @default(autoincrement())
+    name          String        @unique
     nickname      String
     password      String
-    phone         String?         @unique
-    email         String?         @unique
-    verified      Boolean         @default(false)
-    UserFavourite UserFavourite[]
-    UserHistory   UserHistory[]
+    phone         String?       @unique
+    email         String?       @unique
+    verified      Boolean       @default(false)
+    UserFavourite Archive[]     @relation("UsersFav")
+    UserHistory   Archive[]     @relation("UsersHis")
     Comments      Comments[]
     EmailVerify   EmailVerify[]
+    avatar        String?
 }
 
 model EmailVerify {
@@ -59,20 +60,6 @@ model Metadata {
     Archive   Archive? @relation(fields: [archiveId], references: [id])
     archiveId Int?
     size      Int?
-}
-
-model UserFavourite {
-    id      Int       @id @default(autoincrement())
-    user    Users     @relation(fields: [userId], references: [id])
-    userId  Int
-    archive Archive[]
-}
-
-model UserHistory {
-    id      Int       @id @default(autoincrement())
-    user    Users     @relation(fields: [userId], references: [id])
-    userId  Int
-    archive Archive[]
 }
 
 model Comments {
