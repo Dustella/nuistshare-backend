@@ -2,6 +2,7 @@ import { Redirect } from '@nestjsplus/redirect';
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { DownloadService } from './donwload.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { compareVersions } from 'compare-versions';
 
 @Controller('/api/download')
 export class DownloadController {
@@ -54,5 +55,27 @@ export class DownloadController {
     );
     console.log(target);
     resp.status(302).redirect(target);
+  }
+
+  @Get('/python')
+  @Redirect()
+  async getPythonLink(@Res() resp) {
+    const res = await fetch('https://registry.npmmirror.com/-/binary/python/');
+    const data = await res.json();
+    const all = (data as { modified; name; url }[]).flat();
+    const latest = all
+      .filter((a) => a.name.startsWith('3'))
+      .sort((a, b) => {
+        const [version_a, version_b] = [a.name, b.name].map((a) =>
+          a.replace('/', ''),
+        );
+        // the version is semver, so we can just compare them
+        return compareVersions(version_b, version_a);
+      })[0];
+    const metadata = await fetch(latest.url).then((a) => a.json());
+    const target = metadata.find((a) => a.name.endsWith('amd64.exe'));
+    const url = target.url;
+
+    resp.status(302).redirect(url);
   }
 }
