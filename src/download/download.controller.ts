@@ -34,4 +34,25 @@ export class DownloadController {
     const downloadUrl = await this.downloader.getDriverUrl(metadata);
     resp.status(302).redirect(downloadUrl);
   }
+
+  @Get('/vscode')
+  @Redirect()
+  async getVscodeLink(@Res() resp) {
+    const redi = await fetch(
+      'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user',
+      // dont allow follow redirect
+      {
+        redirect: 'manual',
+      },
+    );
+
+    const orignalUrl = redi.headers.get('location');
+    // replace the original host string with https://vscode.cdn.azure.cn with regex that matches `https://xxx/`
+    const target = orignalUrl.replace(
+      /https:\/\/.*?\//,
+      'https://vscode.cdn.azure.cn/',
+    );
+    console.log(target);
+    resp.status(302).redirect(target);
+  }
 }
