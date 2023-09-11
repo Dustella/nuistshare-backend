@@ -77,7 +77,6 @@ export class UsersService {
   }
 
   async getUserRecord(id: number) {
-    console.log(id);
     return await this.prisma.users.findUniqueOrThrow({
       where: { id },
       include: {
@@ -89,11 +88,6 @@ export class UsersService {
 
   async addUserFavourite(userId: number, archiveId: number) {
     try {
-      const archive = await this.prisma.archive.findUnique({
-        where: { id: archiveId },
-      });
-
-      console.log(userId, archiveId, archive);
       return await Promise.all([
         this.prisma.users.update({
           where: { id: userId },

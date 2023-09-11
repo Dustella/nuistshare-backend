@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class DownloadService {
@@ -10,7 +10,8 @@ export class DownloadService {
         const hash = target.split('/').pop();
 
         const apiUrl = `https://${hostname}/api/v3/share/download/${hash}`;
-        console.log(apiUrl);
+
+        Logger.log(`apiUrl: ${apiUrl}`);
 
         const res = await fetch(apiUrl, {
           method: 'PUT',
@@ -22,7 +23,7 @@ export class DownloadService {
       case 'alist': {
         const hostname = new URL(target).hostname;
         const path = new URL(target).pathname;
-        console.log(hostname, path);
+        Logger.log(`hostname: ${hostname}, path: ${path}`);
         const alist_resp = await fetch(
           'https://index.dustella.net/api/fs/get',
           {
@@ -36,6 +37,9 @@ export class DownloadService {
         ).then((a) => a.json());
         const downUrl = alist_resp.data.raw_url;
         return downUrl;
+      }
+      default: {
+        return target;
       }
     }
   }

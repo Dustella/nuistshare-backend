@@ -4,6 +4,38 @@ import { DownloadService } from './donwload.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { compareVersions } from 'compare-versions';
 
+@Controller('/api/preview')
+export class PreviewController {
+  constructor(
+    private prisma: PrismaService,
+    private downloader: DownloadService,
+  ) {}
+
+  @Get()
+  @Redirect()
+  async getPreview(@Query('metadata_id') id: string, @Res() resp) {
+    const item = await this.prisma.metadata.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    // update download count
+    await this.prisma.archive.update({
+      where: {
+        id: item.archiveId,
+      },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    const metadata = item;
+    resp.status(302).redirect(metadata.target);
+  }
+}
+
 @Controller('/api/download')
 export class DownloadController {
   constructor(
@@ -53,7 +85,6 @@ export class DownloadController {
       /https:\/\/.*?\//,
       'https://vscode.cdn.azure.cn/',
     );
-    console.log(target);
     resp.status(302).redirect(target);
   }
 
