@@ -2,10 +2,10 @@
   // prettier format on save
   "editor.formatOnSave": true,
   //   use print as the formatter
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  // "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // "[typescript]": {
+  //   "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // },
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
   }

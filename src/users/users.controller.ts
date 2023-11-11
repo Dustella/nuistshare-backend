@@ -71,7 +71,10 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Put('api/users/me')
-  async updateMe(@Req() req: any, @Body() body: Users) {
+  async updateMe(
+    @Req() req: any,
+    @Body() body: Partial<Omit<Users, 'id' | 'verified'>>,
+  ) {
     const { sub } = req.user;
     return await this.users.changeInfo(sub, body);
   }

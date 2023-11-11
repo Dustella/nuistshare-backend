@@ -148,11 +148,22 @@ export class UsersService {
     });
   }
 
-  async changeInfo(userId: number, newInfo: Users) {
+  async changeInfo(
+    userId: number,
+    newInfo: Partial<Omit<Users, 'id' | 'verified'>>,
+  ) {
+    // pick out the fields that can be changed
+    const allowedFields = ['name', 'nickname', 'avatar', 'phone', 'email'];
+    const keys = Object.keys(newInfo);
+    const filtered = keys.filter((key) => allowedFields.includes(key));
+    const commit = filtered.reduce((obj, key) => {
+      obj[key] = newInfo[key];
+      return obj;
+    }, {});
     return await this.prisma.users.update({
       where: { id: userId },
       data: {
-        ...newInfo,
+        ...commit,
       },
     });
   }
