@@ -14,6 +14,7 @@ export class UsersService {
   ) {}
 
   async login(email: string, password: string) {
+    this.chenkValid({ email, password, username: email });
     const userInDb = await this.prisma.users.findUnique({
       where: { email },
     });
@@ -31,9 +32,17 @@ export class UsersService {
     return await this.auth.signJwt(userInDb);
   }
 
-  async register(email: string, password: string, username: string) {
-    // check if user exists
+  chenkValid(
+    info: Partial<{ email: string; password: string; username: string }>,
+  ) {
+    const { email, password, username } = info;
+    if (!email || !password || !username) {
+      throw new HttpException('Invalid Form', HttpStatus.BAD_REQUEST);
+    }
+  }
 
+  async checkConflict(info: { email: string; username: string }) {
+    const { email, username } = info;
     if (
       await this.prisma.users.findUnique({
         where: { email },
@@ -49,6 +58,12 @@ export class UsersService {
     ) {
       throw new HttpException('Username already exists', HttpStatus.CONFLICT);
     }
+  }
+
+  async register(email: string, password: string, username: string) {
+    // check conflict
+    this.chenkValid({ email, password, username });
+    await this.checkConflict({ email, username });
 
     // hash password
     const hashed_password = await bcrypt.hash(password, 10);
@@ -87,26 +102,27 @@ export class UsersService {
   }
 
   async addUserFavourite(userId: number, archiveId: number) {
+    const updateUser = this.prisma.users.update({
+      where: { id: userId },
+      data: {
+        UserFavourite: {
+          connect: [{ id: archiveId }],
+        },
+      },
+    });
+
+    const addCount = this.prisma.archive.update({
+      where: { id: archiveId },
+      data: {
+        // increase favCount
+        favCount: {
+          increment: 1,
+        },
+      },
+    });
+
     try {
-      return await Promise.all([
-        this.prisma.users.update({
-          where: { id: userId },
-          data: {
-            UserFavourite: {
-              connect: [{ id: archiveId }],
-            },
-          },
-        }),
-        this.prisma.archive.update({
-          where: { id: archiveId },
-          data: {
-            // increase favCount
-            favCount: {
-              increment: 1,
-            },
-          },
-        }),
-      ]);
+      return await Promise.all([updateUser, addCount]);
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
